@@ -37,6 +37,17 @@ def normalize_patterns(patterns):
         normalized.append(pat)
     return normalized
 
+def expand_or_patterns(patterns):
+    """
+    パターン内の '|' を分割し、フラットなパターンリストを返します。
+    例: ["*.py|*.txt", "*.md"] -> ["*.py", "*.txt", "*.md"]
+    """
+    expanded = []
+    for pat in patterns:
+        split_pats = pat.split('|')
+        expanded.extend(split_pats)
+    return expanded
+
 def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=False, include_hidden=False):
     """
     指定されたディレクトリ内のファイルを検索します。
@@ -70,6 +81,19 @@ def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=Fal
         ignore += gitignore_patterns
         logger.debug(f"Loaded .gitignore patterns: {gitignore_patterns}")
 
+    # パターンの展開（ORパターンを分割）
+    if patterns:
+        expanded_patterns = expand_or_patterns(patterns)
+        patterns = expanded_patterns
+        logger.debug(f"Expanded include patterns: {patterns}")
+
+    # エクスクルードパターンも展開（必要に応じて）
+    if ignore:
+        expanded_ignore = expand_or_patterns(ignore)
+        ignore = expanded_ignore
+        logger.debug(f"Expanded ignore patterns: {ignore}")
+
+    logger.info(f"Final include patterns: {patterns}")
     logger.info(f"Final ignore patterns: {ignore}")
 
     for root, dirs, files in os.walk(directory):

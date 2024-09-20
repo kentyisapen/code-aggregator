@@ -35,6 +35,12 @@ class TestFinder(unittest.TestCase):
             f.write('print("Hidden inside directory")')
         with open(os.path.join(self.test_dir, '.gitignore'), 'w') as f:
             f.write('*.js\nnode_modules/\n__pycache__/\n')
+        with open(os.path.join(self.test_dir, 'src', 'file5.cpp'), 'w') as f:
+            f.write('// C++ file')
+        with open(os.path.join(self.test_dir, 'src', 'file6.dpp'), 'w') as f:
+            f.write('// DPP file')
+        with open(os.path.join(self.test_dir, 'src', 'file7.wpp'), 'w') as f:
+            f.write('// WPP file')
 
     def tearDown(self):
         # テスト用の一時ディレクトリを削除
@@ -54,6 +60,9 @@ class TestFinder(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'src', 'file5.cpp'),
+            os.path.join(self.test_dir, 'src', 'file6.dpp'),
+            os.path.join(self.test_dir, 'src', 'file7.wpp'),
             os.path.join(self.test_dir, 'node_modules', 'file4.py'),
             os.path.join(self.test_dir, 'tests', '__pycache__', 'cached_file.pyc'),
             os.path.join(self.test_dir, 'tests', 'test1.py'),
@@ -70,6 +79,9 @@ class TestFinder(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'src', 'file5.cpp'),
+            os.path.join(self.test_dir, 'src', 'file6.dpp'),
+            os.path.join(self.test_dir, 'src', 'file7.wpp'),
             os.path.join(self.test_dir, 'tests', '__pycache__', 'cached_file.pyc'),
             os.path.join(self.test_dir, 'tests', 'test1.py'),
             # node_modules/file4.py は除外されるべき
@@ -86,6 +98,9 @@ class TestFinder(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'src', 'file5.cpp'),
+            os.path.join(self.test_dir, 'src', 'file6.dpp'),
+            os.path.join(self.test_dir, 'src', 'file7.wpp'),
             os.path.join(self.test_dir, 'node_modules', 'file4.py'),
             os.path.join(self.test_dir, 'tests', 'test1.py'),
             # tests/__pycache__/cached_file.pyc は除外されるべき
@@ -116,7 +131,11 @@ class TestFinder(unittest.TestCase):
         expected = [
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'src', 'file5.cpp'),
+            os.path.join(self.test_dir, 'src', 'file6.dpp'),
+            os.path.join(self.test_dir, 'src', 'file7.wpp'),
             os.path.join(self.test_dir, 'tests', 'test1.py'),
+            
             # node_modules/file4.py と tests/__pycache__/cached_file.pyc は除外されるべき
             # 隠しファイル/ディレクトリも除外される
         ]
@@ -146,6 +165,9 @@ class TestFinder(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'src', 'file5.cpp'),
+            os.path.join(self.test_dir, 'src', 'file6.dpp'),
+            os.path.join(self.test_dir, 'src', 'file7.wpp'),
             os.path.join(self.test_dir, 'node_modules', 'file4.py'),
             os.path.join(self.test_dir, 'tests', '__pycache__', 'cached_file.pyc'),
             os.path.join(self.test_dir, 'tests', 'test1.py'),
@@ -165,6 +187,9 @@ class TestFinder(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'src', 'file5.cpp'),
+            os.path.join(self.test_dir, 'src', 'file6.dpp'),
+            os.path.join(self.test_dir, 'src', 'file7.wpp'),
             os.path.join(self.test_dir, 'node_modules', 'file4.py'),
             os.path.join(self.test_dir, 'tests', '__pycache__', 'cached_file.pyc'),
             os.path.join(self.test_dir, 'tests', 'test1.py'),
@@ -178,29 +203,69 @@ class TestFinder(unittest.TestCase):
         """
         files = find_files(directory=self.test_dir, patterns=["*.py", "*.txt"], ignore_patterns=None, use_gitignore=False, include_hidden=True)
         expected = [
-            os.path.join(self.test_dir, '.gitignore'),
-            os.path.join(self.test_dir, '.hidden_file'),  # *.py や *.txt にマッチしないため除外
-            os.path.join(self.test_dir, '.hidden_dir', 'hidden_inside.py'),  # *.py にマッチ
-            os.path.join(self.test_dir, 'src', 'file1.py'),
-            os.path.join(self.test_dir, 'src', 'file3.txt'),
-            os.path.join(self.test_dir, 'node_modules', 'file4.py'),
-            os.path.join(self.test_dir, 'tests', 'test1.py'),
-            # .hidden_file は *.py や *.txt にマッチしないため除外
-            # .hidden_dir/hidden_inside.py は *.py にマッチし含まれる
-            # .gitignore は *.py や *.txt にマッチしないため除外
-            # tests/__pycache__/cached_file.pyc は除外されるべき
-        ]
-        # .hidden_file は *.py や *.txt にマッチしないため含まれない
-        # .gitignore は *.py や *.txt にマッチしないため含まれない
-        # .hidden_dir/hidden_inside.py は *.py にマッチし含まれる
-        expected_filtered = [
             os.path.join(self.test_dir, '.hidden_dir', 'hidden_inside.py'),
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
             os.path.join(self.test_dir, 'node_modules', 'file4.py'),
             os.path.join(self.test_dir, 'tests', 'test1.py'),
+            # .hidden_file は *.py や *.txt にマッチしないため除外
+            # .gitignore は *.py や *.txt にマッチしないため除外
+            # tests/__pycache__/cached_file.pyc は除外されるべき
         ]
-        self.assertEqual(sorted(files), sorted(expected_filtered))
+        self.assertEqual(sorted(files), sorted(expected))
+
+    # 以下、新たに追加されたテストケース
+
+    def test10_find_files_with_or_pattern_py_txt(self):
+        """
+        -P "*.py|*.txt" オプションを使用し、*.py または *.txt にマッチするファイルのみを含めることを確認します。
+        """
+        patterns = ["*.py|*.txt"]
+        files = find_files(directory=self.test_dir, patterns=patterns, ignore_patterns=None, use_gitignore=False, include_hidden=False)
+        expected = [
+            os.path.join(self.test_dir, 'src', 'file1.py'),
+            os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'node_modules', 'file4.py'),
+            os.path.join(self.test_dir, 'tests', 'test1.py'),
+            # .gitignore と tests/__pycache__/cached_file.pyc は除外されるべき
+            # 隠しファイル/ディレクトリも除外される
+        ]
+        self.assertEqual(sorted(files), sorted(expected))
+
+    def test11_find_files_with_character_class_pattern(self):
+        """
+        -P "*.[dwc]pp" オプションを使用し、*.dpp, *.wpp, *.cpp にマッチするファイルのみを含めることを確認します。
+        """
+        patterns = ["*.[dwc]pp"]
+        files = find_files(directory=self.test_dir, patterns=patterns, ignore_patterns=None, use_gitignore=False, include_hidden=False)
+        expected = [
+            os.path.join(self.test_dir, 'src', 'file5.cpp'),
+            os.path.join(self.test_dir, 'src', 'file6.dpp'),
+            os.path.join(self.test_dir, 'src', 'file7.wpp'),
+            # 他のファイルは除外されるべき
+            # .gitignore と tests/__pycache__/cached_file.pyc は除外
+            # 隠しファイル/ディレクトリも除外
+        ]
+        self.assertEqual(sorted(files), sorted(expected))
+
+    def test12_find_files_with_combined_patterns(self):
+        """
+        -P "*.py|*.txt" "*.[dwc]pp" オプションを使用し、*.py または *.txt または *.dpp, *.wpp, *.cpp にマッチするファイルのみを含めることを確認します。
+        """
+        patterns = ["*.py|*.txt", "*.[dwc]pp"]
+        files = find_files(directory=self.test_dir, patterns=patterns, ignore_patterns=None, use_gitignore=False, include_hidden=False)
+        expected = [
+            os.path.join(self.test_dir, 'src', 'file1.py'),
+            os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'node_modules', 'file4.py'),
+            os.path.join(self.test_dir, 'tests', 'test1.py'),
+            os.path.join(self.test_dir, 'src', 'file5.cpp'),
+            os.path.join(self.test_dir, 'src', 'file6.dpp'),
+            os.path.join(self.test_dir, 'src', 'file7.wpp'),
+            # .gitignore と tests/__pycache__/cached_file.pyc は除外されるべき
+            # 隠しファイル/ディレクトリも除外
+        ]
+        self.assertEqual(sorted(files), sorted(expected))
 
 if __name__ == '__main__':
     unittest.main()
