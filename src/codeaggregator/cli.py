@@ -17,11 +17,11 @@ def main():
     )
     parser.add_argument(
         '-P', '--pattern',
-        help='対象とするファイルパターンを指定（カンマ区切り） (例: *.py,*.txt)'
+        help='対象とするファイルパターンを指定 (例: *.py|*.txt)'
     )
     parser.add_argument(
         '-I', '--ignore',
-        help='除外するファイル/ディレクトリパターンを指定（カンマ区切り） (例: node_modules/,__pycache__/)'
+        help='除外するファイル/ディレクトリパターンを指定 (例: node_modules/|__pycache__/)'
     )
     parser.add_argument(
         '--gitignore',

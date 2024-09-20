@@ -2,7 +2,7 @@ def output_files(files, output_destination=None):
     output = []
     output.append("=" * 17)
     for file in files:
-        output.append(f"# {file}\n")
+        output.append(f"##################################\n{file}\n##################################\n")
         try:
             with open(file, 'r', encoding='utf-8') as f:
                 content = f.read()
