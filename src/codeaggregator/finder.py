@@ -37,7 +37,7 @@ def normalize_patterns(patterns):
         normalized.append(pat)
     return normalized
 
-def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=False):
+def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=False, include_hidden=False):
     """
     指定されたディレクトリ内のファイルを検索します。
 
@@ -46,12 +46,17 @@ def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=Fal
         patterns (list, optional): インクルードするファイルパターンのリスト。デフォルトは None（すべてのファイルを含む）。
         ignore_patterns (list, optional): 除外するファイル/ディレクトリパターンのリスト。デフォルトは None。
         use_gitignore (bool, optional): .gitignore のパターンを除外に使用するかどうか。デフォルトは False。
+        include_hidden (bool, optional): 先頭に '.' が付くファイルやフォルダを含めるかどうか。デフォルトは False。
 
     Returns:
         list: マッチしたファイルのパスのリスト。
     """
     matched_files = []
     ignore = []
+
+    # 隠しファイル/フォルダを除外するパターンを追加
+    if not include_hidden:
+        ignore.append('.*')  # 先頭に '.' が付くファイルやフォルダを無視
 
     # 追加の除外パターンがあれば正規化して追加
     if ignore_patterns:
