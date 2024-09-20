@@ -14,6 +14,7 @@ class TestFinder(unittest.TestCase):
         # テストファイルとディレクトリを作成
         os.makedirs(os.path.join(self.test_dir, 'src'), exist_ok=True)
         os.makedirs(os.path.join(self.test_dir, 'node_modules'), exist_ok=True)
+        os.makedirs(os.path.join(self.test_dir, 'tests', '__pycache__'), exist_ok=True)
         
         with open(os.path.join(self.test_dir, 'src', 'file1.py'), 'w') as f:
             f.write('print("Hello, World!")')
@@ -23,8 +24,12 @@ class TestFinder(unittest.TestCase):
             f.write('This is a text file.')
         with open(os.path.join(self.test_dir, 'node_modules', 'file4.py'), 'w') as f:
             f.write('print("This should be ignored")')
+        with open(os.path.join(self.test_dir, 'tests', '__pycache__', 'cached_file.pyc'), 'w') as f:
+            f.write('This is a cached file.')
+        with open(os.path.join(self.test_dir, 'tests', 'test1.py'), 'w') as f:
+            f.write('def test_example(): pass')
         with open(os.path.join(self.test_dir, '.gitignore'), 'w') as f:
-            f.write('*.js\nnode_modules/\n')
+            f.write('*.js\nnode_modules/\n__pycache__/\n')
 
     def tearDown(self):
         # テスト用の一時ディレクトリを削除
@@ -45,11 +50,13 @@ class TestFinder(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
-            os.path.join(self.test_dir, 'node_modules', 'file4.py')
+            os.path.join(self.test_dir, 'node_modules', 'file4.py'),
+            os.path.join(self.test_dir, 'tests', '__pycache__', 'cached_file.pyc'),
+            os.path.join(self.test_dir, 'tests', 'test1.py')
         ]
         self.assertEqual(sorted(files), sorted(expected))
 
-    def test_find_files_with_ignore_pattern(self):
+    def test_find_files_with_ignore_pattern_top_level(self):
         """
         -I "node_modules/" オプションを使用し、node_modules ディレクトリを除外することを確認します。
         """
@@ -58,20 +65,40 @@ class TestFinder(unittest.TestCase):
             os.path.join(self.test_dir, '.gitignore'),
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file2.js'),
-            os.path.join(self.test_dir, 'src', 'file3.txt')
+            os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'tests', '__pycache__', 'cached_file.pyc'),
+            os.path.join(self.test_dir, 'tests', 'test1.py')
             # node_modules/file4.py は除外されるべき
+        ]
+        self.assertEqual(sorted(files), sorted(expected))
+
+    def test_find_files_with_ignore_pattern_nested(self):
+        """
+        -I "__pycache__/" オプションを使用し、任意の階層にある __pycache__ ディレクトリを除外することを確認します。
+        """
+        files = find_files(directory=self.test_dir, patterns=None, ignore_patterns=["__pycache__/"], use_gitignore=False)
+        expected = [
+            os.path.join(self.test_dir, '.gitignore'),
+            os.path.join(self.test_dir, 'src', 'file1.py'),
+            os.path.join(self.test_dir, 'src', 'file2.js'),
+            os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'node_modules', 'file4.py'),
+            os.path.join(self.test_dir, 'tests', 'test1.py')
+            # tests/__pycache__/cached_file.pyc は除外されるべき
         ]
         self.assertEqual(sorted(files), sorted(expected))
 
     def test_find_files_include_multiple_patterns(self):
         """
-        -P "*.py,*.txt" オプションを使用し、特定のパターンに一致するファイルのみを含めることを確認します。
+        -P "*.py", "*.txt" オプションを使用し、特定のパターンに一致するファイルのみを含めることを確認します。
         """
         files = find_files(directory=self.test_dir, patterns=["*.py", "*.txt"], ignore_patterns=None, use_gitignore=False)
         expected = [
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
-            os.path.join(self.test_dir, 'node_modules', 'file4.py')
+            os.path.join(self.test_dir, 'node_modules', 'file4.py'),
+            os.path.join(self.test_dir, 'tests', 'test1.py')
+            # .gitignore と tests/__pycache__/cached_file.pyc は除外されるべき
         ]
         self.assertEqual(sorted(files), sorted(expected))
 
@@ -83,37 +110,40 @@ class TestFinder(unittest.TestCase):
         expected = [
             os.path.join(self.test_dir, '.gitignore'),
             os.path.join(self.test_dir, 'src', 'file1.py'),
-            os.path.join(self.test_dir, 'src', 'file3.txt')
-            # node_modules/file4.py は除外されるべき
+            os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'tests', 'test1.py')
+            #  node_modules/file4.py, tests/__pycache__/cached_file.pyc は除外されるべき
         ]
         self.assertEqual(sorted(files), sorted(expected))
 
     def test_find_files_include_with_gitignore_and_patterns(self):
         """
-        -P "*.py,*.txt" --gitignore オプションを使用し、インクルードパターンと .gitignore の除外パターンが正しく適用されることを確認します。
+        -P "*.py", "*.txt" --gitignore オプションを使用し、インクルードパターンと .gitignore の除外パターンが正しく適用されることを確認します。
         """
         files = find_files(directory=self.test_dir, patterns=["*.py", "*.txt"], ignore_patterns=None, use_gitignore=True)
         expected = [
             os.path.join(self.test_dir, 'src', 'file1.py'),
-            os.path.join(self.test_dir, 'src', 'file3.txt')
-            # node_modules/file4.py は .gitignore により除外されるため含まれません
+            os.path.join(self.test_dir, 'src', 'file3.txt'),
+            os.path.join(self.test_dir, 'tests', 'test1.py')
+            # node_modules/file4.py と tests/__pycache__/cached_file.pyc は除外されるべき
         ]
         self.assertEqual(sorted(files), sorted(expected))
 
-    def test_find_files_hidden_files_included(self):
+    def test_find_files_hidden_directories_included(self):
         """
-        .から始まる隠しファイルも含まれることを確認します。
+        隠しディレクトリ（__pycache__ や .gitignore）が正しく除外されていることを確認します。
         """
-        # .gitignore ファイル自体を除外しない
-        files = find_files(directory=self.test_dir, patterns=None, ignore_patterns=None, use_gitignore=False)
+        # -I "__pycache__/"
+        files = find_files(directory=self.test_dir, patterns=None, ignore_patterns=["__pycache__/"], use_gitignore=False)
         expected = [
             os.path.join(self.test_dir, '.gitignore'),
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
-            os.path.join(self.test_dir, 'node_modules', 'file4.py')
+            os.path.join(self.test_dir, 'node_modules', 'file4.py'),
+            os.path.join(self.test_dir, 'tests', 'test1.py')
+            # tests/__pycache__/cached_file.pyc は除外されるべき
         ]
-        self.assertIn(os.path.join(self.test_dir, '.gitignore'), files)
         self.assertEqual(sorted(files), sorted(expected))
 
 if __name__ == '__main__':

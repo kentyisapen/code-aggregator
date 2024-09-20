@@ -71,11 +71,10 @@ def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=Fal
         # 除外ディレクトリの処理
         dirs_to_remove = []
         for d in dirs:
-            full_dir_path = os.path.join(root, d)
-            rel_dir_path = os.path.relpath(full_dir_path, directory)
-            if any(fnmatch.fnmatch(rel_dir_path, pat) for pat in ignore):
+            # ディレクトリ名のみでマッチング
+            if any(fnmatch.fnmatch(d, pat) for pat in ignore):
                 dirs_to_remove.append(d)
-                logger.debug(f"Excluding directory: {rel_dir_path}")
+                logger.debug(f"Excluding directory: {os.path.join(root, d)}")
         for d in dirs_to_remove:
             dirs.remove(d)
 

@@ -13,7 +13,7 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'codeaggregator=codeaggregator.cli:main',
+            'code-aggregator=codeaggregator.cli:main',
         ],
     },
     install_requires=[
