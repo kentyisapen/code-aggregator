@@ -8,3 +8,4 @@ CodeAggregatorは、生成AI用にコードファイルをまとめて標準出�
 git clone https://github.com/kentyisapen/code-aggregator.git
 cd code-aggregator
 pip install -e .
+```
