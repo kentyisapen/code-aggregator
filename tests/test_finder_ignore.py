@@ -46,7 +46,7 @@ class TestFinderIgnore(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file3.txt'),
             # node_modules/file2.js は除外されるべき
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
 
 if __name__ == '__main__':
     unittest.main()

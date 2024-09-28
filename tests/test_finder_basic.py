@@ -45,7 +45,7 @@ class TestFinderBasic(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
 
 if __name__ == '__main__':
     unittest.main()

@@ -58,7 +58,7 @@ class TestFinderGitignore(unittest.TestCase):
             # node_modules/file4.py と tests/__pycache__/cached_file.pyc は除外されるべき
             # .gitignore自体は隠しファイルなのでデフォルトでは非表示
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
     
     def test02_gitignore_with_patterns(self):
         """
@@ -78,7 +78,7 @@ class TestFinderGitignore(unittest.TestCase):
             # node_modules/file4.py と tests/__pycache__/cached_file.pyc は .gitignore により除外されるため含まれません
             # .gitignore 自体は *.py や *.txt にマッチしないため除外
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
 
 if __name__ == '__main__':
     unittest.main()

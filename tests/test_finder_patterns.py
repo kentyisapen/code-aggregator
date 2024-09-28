@@ -51,7 +51,7 @@ class TestFinderPatterns(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
     
     def test02_include_or_pattern_py_txt(self):
         """
@@ -69,7 +69,7 @@ class TestFinderPatterns(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
     
     def test03_include_character_class_pattern(self):
         """
@@ -88,7 +88,7 @@ class TestFinderPatterns(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file5.wpp'),
             os.path.join(self.test_dir, 'src', 'file6.cpp'),
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
     
     def test04_include_combined_patterns(self):
         """
@@ -109,7 +109,7 @@ class TestFinderPatterns(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file5.wpp'),
             os.path.join(self.test_dir, 'src', 'file6.cpp'),
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
 
 if __name__ == '__main__':
     unittest.main()

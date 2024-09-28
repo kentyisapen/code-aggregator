@@ -51,7 +51,7 @@ class TestFinderHidden(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file3.txt'),
             # .hidden_file と .hidden_dir/hidden_inside.py は除外されるべき
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
     
     def test02_include_hidden_with_a_option(self):
         """
@@ -71,7 +71,7 @@ class TestFinderHidden(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file2.js'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
         ]
-        self.assertEqual(sorted(files), sorted(expected))
+        self.assertCountEqual(sorted(files), sorted(expected))
     
     def test03_include_hidden_with_patterns(self):
         """
@@ -96,7 +96,7 @@ class TestFinderHidden(unittest.TestCase):
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
         ]
-        self.assertEqual(sorted(files), sorted(expected_filtered))
+        self.assertCountEqual(sorted(files), sorted(expected_filtered))
 
 if __name__ == '__main__':
     unittest.main()
