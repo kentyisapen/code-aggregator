@@ -1,6 +1,7 @@
 # ./src/codeaggregator/cli.py
 
 import argparse
+import logging
 from codeaggregator.finder import find_files
 from codeaggregator.output import output_files
 
@@ -43,8 +44,19 @@ def main():
         version='CodeAggregator 0.1.0',
         help='バージョン情報を表示'
     )
+    parser.add_argument(
+        '-i', '--info',
+        action='store_true',  # フラグとして定義
+        help='詳細情報の表示 (INFOレベルのログを有効にします)'
+    )
 
     args = parser.parse_args()
+
+    # ログレベルの設定
+    if args.info:
+        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    else:
+        logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
 
     # パターンをリストに変換
     patterns = args.pattern.split(',') if args.pattern else None

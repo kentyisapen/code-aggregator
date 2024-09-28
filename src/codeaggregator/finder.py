@@ -6,7 +6,6 @@ from pathlib import Path
 import logging
 
 # ロガーの設定
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def load_gitignore(directory):
