@@ -37,7 +37,7 @@ class TestFinderBasic(unittest.TestCase):
             directory=self.test_dir,
             patterns=None,
             ignore_patterns=None,
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=False
         )
         expected = [

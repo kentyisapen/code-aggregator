@@ -42,7 +42,7 @@ class TestFinderHidden(unittest.TestCase):
             directory=self.test_dir,
             patterns=None,
             ignore_patterns=None,
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=False
         )
         expected = [
@@ -61,7 +61,7 @@ class TestFinderHidden(unittest.TestCase):
             directory=self.test_dir,
             patterns=None,
             ignore_patterns=None,
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=True
         )
         expected = [
@@ -81,22 +81,17 @@ class TestFinderHidden(unittest.TestCase):
             directory=self.test_dir,
             patterns=["*.py", "*.txt"],
             ignore_patterns=None,
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=True
         )
+        # *.js はパターンに含まれないため除外
         expected = [
             os.path.join(self.test_dir, '.hidden_dir', 'hidden_inside.py'),
             os.path.join(self.test_dir, 'src', 'file1.py'),
             os.path.join(self.test_dir, 'src', 'file3.txt'),
-            os.path.join(self.test_dir, 'src', 'file2.js'),  # *.js はパターンに含まれないため除外
         ]
-        # *.js はパターンに含まれないため除外
-        expected_filtered = [
-            os.path.join(self.test_dir, '.hidden_dir', 'hidden_inside.py'),
-            os.path.join(self.test_dir, 'src', 'file1.py'),
-            os.path.join(self.test_dir, 'src', 'file3.txt'),
-        ]
-        self.assertCountEqual(sorted(files), sorted(expected_filtered))
+        print(files)
+        self.assertCountEqual(sorted(files), sorted(expected))
 
 if __name__ == '__main__':
     unittest.main()

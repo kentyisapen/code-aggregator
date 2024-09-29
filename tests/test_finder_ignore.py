@@ -38,7 +38,7 @@ class TestFinderIgnore(unittest.TestCase):
             directory=self.test_dir,
             patterns=None,
             ignore_patterns=["node_modules/"],
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=False
         )
         expected = [

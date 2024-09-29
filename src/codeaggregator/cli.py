@@ -1,4 +1,4 @@
-# ./src/codeaggregator/cli.py
+# cli.py
 
 import argparse
 import logging
@@ -25,9 +25,11 @@ def main():
         help='除外するファイル/ディレクトリパターンを指定 (例: node_modules/|__pycache__/)'
     )
     parser.add_argument(
-        '--gitignore',
-        action='store_true',
-        help='.gitignoreを基に除外パターンを適用'
+        '--fromfile',
+        metavar='FILE',
+        nargs='?',
+        const='.',
+        help='ファイルリストを指定。パイプ入力の場合は何も指定せずに使用。例: --fromfile, --fromfile=path.txt'
     )
     parser.add_argument(
         '-a', '--all',
@@ -59,17 +61,27 @@ def main():
         logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
 
     # パターンをリストに変換
-    patterns = args.pattern.split(',') if args.pattern else None
-    ignore_patterns = args.ignore.split(',') if args.ignore else None
+    patterns = expand_patterns(args.pattern) if args.pattern else None
+    ignore_patterns = expand_patterns(args.ignore) if args.ignore else None
 
     # ファイル検索
     files = find_files(
         directory=args.directory,
         patterns=patterns,
         ignore_patterns=ignore_patterns,
-        use_gitignore=args.gitignore,
+        fromfile=args.fromfile,
         include_hidden=args.all  # -a オプションに基づき隠しファイルを含める
     )
 
     # 検索結果の出力
     output_files(files, args.output)
+
+def expand_patterns(pattern_str):
+    """
+    パターン文字列をリストに変換し、ORパターンを展開します。
+    """
+    patterns = pattern_str.split(',')
+    expanded = []
+    for pat in patterns:
+        expanded.extend(pat.split('|'))
+    return expanded

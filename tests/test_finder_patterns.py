@@ -44,7 +44,7 @@ class TestFinderPatterns(unittest.TestCase):
             directory=self.test_dir,
             patterns=["*.py", "*.txt"],
             ignore_patterns=None,
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=False
         )
         expected = [
@@ -62,7 +62,7 @@ class TestFinderPatterns(unittest.TestCase):
             directory=self.test_dir,
             patterns=patterns,
             ignore_patterns=None,
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=False
         )
         expected = [
@@ -80,7 +80,7 @@ class TestFinderPatterns(unittest.TestCase):
             directory=self.test_dir,
             patterns=patterns,
             ignore_patterns=None,
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=False
         )
         expected = [
@@ -99,7 +99,7 @@ class TestFinderPatterns(unittest.TestCase):
             directory=self.test_dir,
             patterns=patterns,
             ignore_patterns=None,
-            use_gitignore=False,
+            fromfile=None,
             include_hidden=False
         )
         expected = [

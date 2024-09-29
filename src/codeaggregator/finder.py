@@ -1,29 +1,13 @@
-# ./src/codeaggregator/finder.py
+# finder.py
 
 import os
 import fnmatch
 from pathlib import Path
 import logging
+import sys
 
 # ロガーの設定
 logger = logging.getLogger(__name__)
-
-def load_gitignore(directory):
-    """
-    指定されたディレクトリから .gitignore ファイルを読み込み、パターンをリストとして返します。
-    """
-    gitignore_path = Path(directory) / '.gitignore'
-    patterns = []
-    if gitignore_path.exists():
-        with open(gitignore_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#'):
-                    # 末尾のスラッシュを除去
-                    if line.endswith('/'):
-                        line = line.rstrip('/')
-                    patterns.append(line)
-    return patterns
 
 def normalize_patterns(patterns):
     """
@@ -47,7 +31,7 @@ def expand_or_patterns(patterns):
         expanded.extend(split_pats)
     return expanded
 
-def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=False, include_hidden=False):
+def find_files(directory, patterns=None, ignore_patterns=None, fromfile=None, include_hidden=False):
     """
     指定されたディレクトリ内のファイルを検索します。
 
@@ -55,7 +39,7 @@ def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=Fal
         directory (str): 検索対象のディレクトリパス。
         patterns (list, optional): インクルードするファイルパターンのリスト。デフォルトは None（すべてのファイルを含む）。
         ignore_patterns (list, optional): 除外するファイル/ディレクトリパターンのリスト。デフォルトは None。
-        use_gitignore (bool, optional): .gitignore のパターンを除外に使用するかどうか。デフォルトは False。
+        fromfile (str, optional): ファイルリストを指定。"." を指定すると標準入力から読み取ります。デフォルトは None。
         include_hidden (bool, optional): 先頭に '.' が付くファイルやフォルダを含めるかどうか。デフォルトは False。
 
     Returns:
@@ -74,12 +58,6 @@ def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=Fal
         ignore += normalized_ignore
         logger.debug(f"Normalized ignore patterns: {normalized_ignore}")
 
-    # .gitignore のパターンを除外に追加
-    if use_gitignore:
-        gitignore_patterns = load_gitignore(directory)
-        ignore += gitignore_patterns
-        logger.debug(f"Loaded .gitignore patterns: {gitignore_patterns}")
-
     # パターンの展開（ORパターンを分割）
     if patterns:
         expanded_patterns = expand_or_patterns(patterns)
@@ -89,40 +67,64 @@ def find_files(directory, patterns=None, ignore_patterns=None, use_gitignore=Fal
     # エクスクルードパターンも展開（必要に応じて）
     if ignore:
         expanded_ignore = expand_or_patterns(ignore)
-        ignore = expanded_ignore
+        ignore += expanded_ignore
         logger.debug(f"Expanded ignore patterns: {ignore}")
 
     logger.info(f"Final include patterns: {patterns}")
     logger.info(f"Final ignore patterns: {ignore}")
 
-    for root, dirs, files in os.walk(directory):
-        # 除外ディレクトリの処理
-        dirs_to_remove = []
-        for d in dirs:
-            # ディレクトリ名のみでマッチング
-            if any(fnmatch.fnmatch(d, pat) for pat in ignore):
-                dirs_to_remove.append(d)
-                logger.debug(f"Excluding directory: {os.path.join(root, d)}")
-        for d in dirs_to_remove:
-            dirs.remove(d)
+    if fromfile:
+        if fromfile == '.':
+            # 標準入力からファイルリストを取得
+            logger.info("Reading file list from stdin.")
+            file_list = [line.strip() for line in sys.stdin if line.strip()]
+        else:
+            # 指定されたファイルからファイルリストを取得
+            logger.info(f"Reading file list from {fromfile}.")
+            try:
+                with open(fromfile, 'r', encoding='utf-8') as f:
+                    file_list = [line.strip() for line in f if line.strip()]
+            except Exception as e:
+                logger.error(f"Error reading from file {fromfile}: {e}")
+                return matched_files
+    else:
+        # 通常のファイル検索
+        file_list = []
+        for root, dirs, files in os.walk(directory):
+            # 除外ディレクトリの処理
+            dirs_to_remove = []
+            for d in dirs:
+                # ディレクトリ名のみでマッチング
+                if any(fnmatch.fnmatch(d, pat) for pat in ignore):
+                    dirs_to_remove.append(d)
+                    logger.debug(f"Excluding directory: {os.path.join(root, d)}")
+            for d in dirs_to_remove:
+                dirs.remove(d)
 
-        for file in files:
-            file_path = os.path.join(root, file)
-            relative_path = os.path.relpath(file_path, directory)
+            for file in files:
+                if not include_hidden and file.startswith('.'):
+                    continue
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, directory)
+                file_list.append(rel_path)
 
-            # インクルードパターンの適用
-            if patterns:
-                if not any(fnmatch.fnmatch(file, pat) for pat in patterns):
-                    logger.debug(f"Excluded by include pattern: {relative_path}")
-                    continue  # インクルードパターンに一致しない場合、スキップ
+    
+    for rel_file_path in file_list:
+        abs_file_path = os.path.join(directory, rel_file_path)
+        print(rel_file_path)
 
-            # エクスクルードパターンの適用
-            if ignore:
-                if any(fnmatch.fnmatch(relative_path, pat) for pat in ignore):
-                    logger.debug(f"Excluded by ignore pattern: {relative_path}")
-                    continue  # エクスクルードパターンに一致する場合、スキップ
+        # インクルードパターンの適用
+        if patterns:
+            if not any(fnmatch.fnmatch(rel_file_path, pat) for pat in patterns):
+                logger.debug(f"Excluded by include pattern: {rel_file_path}")
+                continue  # インクルードパターンに一致しない場合、スキップ
 
-            matched_files.append(file_path)
-            logger.info(f"Included: {relative_path}")
+        # エクスクルードパターンの適用
+        if ignore:
+            if any(fnmatch.fnmatch(rel_file_path, pat) for pat in ignore):
+                logger.debug(f"Excluded by ignore pattern: {rel_file_path}")
+                continue  # エクスクルードパターンに一致する場合、スキップ
+
+        matched_files.append(abs_file_path)
 
     return matched_files
